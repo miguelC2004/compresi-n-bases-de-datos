@@ -1,6 +1,6 @@
 ### Proyecto de Backup, Compresión y Encriptación de Bases de Datos MySQL
 
-Este proyecto consiste en un conjunto de funciones en Python para realizar el respaldo, compresión, encriptación, restauración, desencriptación y descompresión de una base de datos MySQL.
+Este proyecto realiza una serie de operaciones para respaldar, comprimir, encriptar, desencriptar, descomprimir y restaurar una base de datos MySQL
 
 ## Requisitos
 
