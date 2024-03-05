@@ -28,8 +28,34 @@ Este proyecto realiza una serie de operaciones para respaldar, comprimir, encrip
    from cryptography.hazmat.primitives.asymmetric import rsa, padding
    from cryptography.hazmat.primitives import serialization
 
-   def backup_compress_encrypt_database(username, password, database_name, private_key_path, output_file):
-       # Código de la función backup_compress_encrypt_database
+  def backup_compress_encrypt_database(username, password, database_name, private_key_path, output_file):
+    # Hacer el respaldo de la base de datos utilizando mysqldump
+    mysqldump_command = f"mysqldump -u {username} -p{password} {database_name}"
+    database_dump = subprocess.check_output(mysqldump_command, shell=True)
+
+    # Comprimir el respaldo utilizando gzip
+    compressed_data = gzip.compress(database_dump)
+
+    # Encriptar el respaldo comprimido utilizando una clave privada
+    with open(private_key_path, "rb") as private_key_file:
+        private_key = serialization.load_pem_private_key(
+            private_key_file.read(),
+            password=None,
+            backend=default_backend()
+        )
+
+    encrypted_data = private_key.sign(
+        compressed_data,
+        padding.PSS(
+            mgf=padding.MGF1(hashes.SHA256()),
+            salt_length=padding.PSS.MAX_LENGTH
+        ),
+        hashes.SHA256()
+    )
+
+    # Guardar el archivo comprimido y encriptado
+    with open(output_file, "wb") as output_file:
+        output_file.write(encrypted_data)
 
    # Configuración de la base de datos y las claves
    db_username = "server"
