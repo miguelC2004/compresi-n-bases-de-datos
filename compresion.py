@@ -76,9 +76,9 @@ def decrypt_decompress_restore_database(encrypted_file, public_key_path, usernam
     os.remove(temp_filename)
 
 # Configuración de la base de datos
-db_username = "tu_usuario"
-db_password = "tu_contraseña"
-db_name = "tu_base_de_datos"
+db_username = ""
+db_password = ""
+db_name = ""
 
 # Configuración de las claves
 private_key_path = "private_key.pem"
