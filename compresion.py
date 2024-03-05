@@ -2,7 +2,8 @@ import os
 import subprocess
 import gzip
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.asymmetric import rsa, padding
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives import serialization
 
 def backup_compress_encrypt_database(username, password, database_name, private_key_path, output_file):
@@ -20,7 +21,7 @@ def backup_compress_encrypt_database(username, password, database_name, private_
             password=None,
             backend=default_backend()
         )
-    
+
     encrypted_data = private_key.sign(
         compressed_data,
         padding.PSS(
@@ -34,7 +35,7 @@ def backup_compress_encrypt_database(username, password, database_name, private_
     with open(output_file, "wb") as output_file:
         output_file.write(encrypted_data)
 
-def decrypt_decompress_restore_database(encrypted_file, public_key_path, output_file):
+def decrypt_decompress_restore_database(encrypted_file, public_key_path, username, password, database_name):
     # Desencriptar el archivo utilizando una clave pública
     with open(public_key_path, "rb") as public_key_file:
         public_key = serialization.load_pem_public_key(
@@ -62,9 +63,17 @@ def decrypt_decompress_restore_database(encrypted_file, public_key_path, output_
     # Descomprimir el archivo desencriptado
     decompressed_data = gzip.decompress(decrypted_data)
 
+    # Guardar el archivo descomprimido temporalmente
+    temp_filename = "temp.sql"
+    with open(temp_filename, "wb") as temp_file:
+        temp_file.write(decompressed_data)
+
     # Restaurar la base de datos desde el archivo descomprimido
-    restore_command = f"mysql -u {username} -p{password} {database_name}"
-    subprocess.run(restore_command, input=decompressed_data, shell=True)
+    restore_command = f"mysql -u {username} -p{password} {database_name} < {temp_filename}"
+    subprocess.run(restore_command, shell=True)
+
+    # Eliminar el archivo temporal
+    os.remove(temp_filename)
 
 # Configuración de la base de datos
 db_username = "tu_usuario"
@@ -80,5 +89,4 @@ backup_filename = "backup.dat"
 backup_compress_encrypt_database(db_username, db_password, db_name, private_key_path, backup_filename)
 
 # Desencriptar y descomprimir para restaurar la base de datos
-restored_filename = "restored.sql"
-decrypt_decompress_restore_database(backup_filename, public_key_path, restored_filename)
+decrypt_decompress_restore_database(backup_filename, public_key_path, db_username, db_password, db_name)
