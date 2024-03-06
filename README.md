@@ -66,7 +66,6 @@ Este proyecto realiza una serie de operaciones para respaldar, comprimir, encrip
 
    # Llamada a la función
    backup_compress_encrypt_database(db_username, db_password, db_name, private_key_path, backup_filename)
-   ```
    
    2. **Desencriptar, descomprimir y restaurar la base de datos:**
    ```python
